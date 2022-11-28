@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  dev:
+    build:
+      context: .
+      # This path is relative to above context.
+      dockerfile: Dockerfile
+
+    volumes:
+      - ..:/workspace:cached
+
+    environment:
+      - MONGODB_URL=mongodb://local:local@localhost
+      - REDIS_URL=redis://default:local@localhost
+
+    command: sleep infinity
+
+  mongo:
+    image: mongo:latest
+    restart: unless-stopped
+
+    volumes:
+      - data:/mongo
+    
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: local
+      MONGO_INITDB_ROOT_PASSWORD: local
+      MONGO_INITDB_DATABASE: test
+
+    network_mode: service:dev
+
+  redis:
+    image: redis:latest
+    restart: unless-stopped
+
+    volumes:
+      - data:/redis
+
+    command: redis-server --requirepass local
+
+    network_mode: service:dev
+
+volumes:
+  data:
